@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>What to eat today (วันนี้กินอะไรดี)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & Prompt for crisp Thai & English typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Prompt:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Tone.js for crisp arcade wheel tick & celebration sounds -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              brandPrimary: "#FCCD47",
+              brandSecondary: "#30B944",
+              brandTertiary: "#302F2B",
+            },
+            fontFamily: {
+              sans: ["Prompt", "Inter", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style>
+      /* Custom styles for smooth canvas rendering & subtle background patterns */
+      html,
+      body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      body {
+        background-color: #fffdf7;
+        background-image: radial-gradient(#fccd47 1px, transparent 1px);
+        background-size: 20px 20px;
+        color: #302f2b;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+
+      /* Responsive Wheel Sizing: scales cleanly on small phones up to large desktops */
+      .wheel-stage {
+        width: min(84vw, 48dvh, 460px);
+        height: min(84vw, 48dvh, 460px);
+      }
+
+      @media (min-width: 640px) {
+        .wheel-stage {
+          width: min(72vw, 54dvh, 480px);
+          height: min(72vw, 54dvh, 480px);
+        }
+      }
+
+      /* Wheel container shadow and positioning */
+      .wheel-shadow {
+        box-shadow:
+          0 14px 28px -8px rgba(48, 47, 43, 0.25),
+          0 0 0 6px #302f2b;
+      }
+
+      @media (min-width: 640px) {
+        .wheel-shadow {
+          box-shadow:
+            0 20px 35px -10px rgba(48, 47, 43, 0.25),
+            0 0 0 10px #302f2b;
+        }
+      }
+
+      @keyframes popIn {
+        0% {
+          opacity: 0;
+          transform: scale(0.88) translateY(16px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .animate-pop-in {
+        animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+
+      #confettiCanvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 60;
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-[100dvh] w-full flex flex-col justify-between items-center relative"
+  >
+    <!-- Confetti Overlay -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Header Section (Mobile-first compact spacing) -->
+    <header
+      class="w-full max-w-4xl mx-auto pt-3 sm:pt-6 pb-1 px-4 text-center z-10 shrink-0"
+    >
+      <div
+        class="inline-flex items-center gap-1.5 sm:gap-2 bg-brandTertiary text-brandPrimary px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-3 shadow-md"
+      >
+        <span>🍽️</span>
+        <span>FOOD ROULETTE • By Phone</span>
+      </div>
+      <h1
+        class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-brandTertiary tracking-tight leading-tight"
+      >
+        What to eat today
+      </h1>
+      <p
+        class="text-lg sm:text-2xl md:text-3xl font-bold text-brandSecondary mt-0.5 sm:mt-1"
+      >
+        (วันนี้กินอะไรดี)
+      </p>
+    </header>
+
+    <!-- Main Roulette Stage -->
+    <main
+      class="flex-1 w-full max-w-3xl mx-auto flex flex-col items-center justify-center px-4 py-2 sm:py-4 z-10"
+    >
+      <!-- Wheel Wrapper (Responsive Square Stage) -->
+      <div
+        class="wheel-stage relative flex items-center justify-center my-2 sm:my-3 touch-pan-y"
+      >
+        <!-- Top Pointer / Indicator -->
+        <div
+          class="absolute -top-4 sm:-top-6 left-1/2 -translate-x-1/2 z-30 drop-shadow-lg pointer-events-none"
+        >
+          <svg
+            class="w-9 h-11 sm:w-[46px] sm:h-[54px]"
+            viewBox="0 0 46 54"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M23 54L3.08142 19.5C-1.53738 11.5 4.23612 1.5 13.4737 1.5H32.5263C41.7639 1.5 47.5374 11.5 42.9186 19.5L23 54Z"
+              fill="#30B944"
+              stroke="#302F2B"
+              stroke-width="3"
+            />
+            <circle
+              cx="23"
+              cy="16"
+              r="6"
+              fill="#FCCD47"
+              stroke="#302F2B"
+              stroke-width="2.5"
+            />
+          </svg>
+        </div>
+
+        <!-- Canvas Container (Supports touch swipe & tap to spin) -->
+        <div
+          id="wheelContainer"
+          class="w-full h-full rounded-full wheel-shadow bg-brandTertiary overflow-hidden relative flex items-center justify-center cursor-pointer"
+        >
+          <canvas id="rouletteCanvas" class="w-full h-full block"></canvas>
+        </div>
+
+        <!-- Center Hub Button (Touch-friendly 56px+ target) -->
+        <button
+          id="centerSpinBtn"
+          aria-label="Spin Wheel"
+          class="absolute w-14 h-14 sm:w-20 sm:h-20 rounded-full bg-brandTertiary border-[3px] sm:border-4 border-brandPrimary shadow-xl flex items-center justify-center text-brandPrimary font-extrabold text-[11px] sm:text-sm tracking-wider uppercase hover:scale-105 active:scale-95 transition-transform cursor-pointer z-20"
+        >
+          SPIN
+        </button>
+      </div>
+
+      <!-- Primary Action Controls (Mobile-first thumb zone) -->
+      <div
+        class="mt-3 sm:mt-6 flex flex-col items-center gap-2.5 sm:gap-3 w-full max-w-[300px] sm:max-w-xs"
+      >
+        <button
+          id="spinBtn"
+          class="w-full min-h-[54px] sm:min-h-[62px] py-3 sm:py-4 px-6 sm:px-8 rounded-2xl bg-brandSecondary hover:bg-[#28a03a] active:translate-y-1 text-white font-extrabold text-lg sm:text-2xl shadow-[0_5px_0_#302F2B] sm:shadow-[0_6px_0_#302F2B] border-2 border-brandTertiary transition-all flex items-center justify-center gap-2.5 sm:gap-3 cursor-pointer"
+        >
+          <span>🎲</span>
+          <span>Spin</span>
+        </button>
+
+        <!-- Sound Toggle & Menu Count Info -->
+        <div
+          class="flex items-center justify-between w-full px-1 mt-0.5 text-xs sm:text-sm font-medium text-brandTertiary/80"
+        >
+          <span id="itemCountLabel">23 เมนูพร้อมสุ่ม</span>
+          <button
+            id="soundToggleBtn"
+            class="min-h-[36px] flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-brandPrimary/30 hover:bg-brandPrimary/50 active:scale-95 text-brandTertiary transition-all cursor-pointer"
+          >
+            <span id="soundIcon">🔊</span>
+            <span id="soundText">Sound On</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer
+      class="w-full py-2.5 sm:py-4 px-4 text-center text-[11px] sm:text-sm text-brandTertiary/70 z-10 shrink-0"
+    >
+      <p>
+        กดปุ่ม
+        <strong class="text-brandTertiary">Spin</strong>
+        หรือปัดที่วงล้อเพื่อสุ่มเมนูมื้ออร่อยวันนี้!
+      </p>
+    </footer>
+
+    <!-- Result Modal (Step 2 of User Flow - Mobile-first bottom/center sheet feel) -->
+    <div
+      id="resultModal"
+      class="fixed inset-0 z-50 hidden items-end sm:items-center justify-center p-3 sm:p-4 bg-brandTertiary/75 backdrop-blur-sm transition-opacity"
+    >
+      <div
+        class="bg-white w-full max-w-md rounded-3xl border-[3px] sm:border-4 border-brandTertiary shadow-2xl overflow-hidden animate-pop-in relative mb-2 sm:mb-0"
+      >
+        <!-- Modal Top Banner -->
+        <div
+          class="bg-brandPrimary py-4 sm:py-5 px-5 sm:px-6 text-center border-b-[3px] sm:border-b-4 border-brandTertiary relative"
+        >
+          <span
+            class="inline-block bg-brandTertiary text-brandPrimary text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-1"
+          >
+            🎉 เมนูผู้ชนะวันนี้คือ
+          </span>
+          <h2 class="text-base sm:text-xl font-bold text-brandTertiary">
+            Today's Menu Recommendation!
+          </h2>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-5 sm:p-8 text-center flex flex-col items-center">
+          <!-- Food Icon Badge -->
+          <div
+            id="resultEmoji"
+            class="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-brandPrimary/25 border-2 border-brandPrimary flex items-center justify-center text-3xl sm:text-5xl mb-3 sm:mb-4 shadow-inner"
+          >
+            🍜
+          </div>
+
+          <!-- Selected Menu Name -->
+          <div
+            class="bg-[#FFFDF7] border-2 border-dashed border-brandTertiary/30 rounded-2xl py-3.5 sm:py-4 px-4 sm:px-5 w-full mb-5 sm:mb-6"
+          >
+            <p
+              id="resultFoodName"
+              class="text-xl sm:text-3xl md:text-4xl font-extrabold text-brandTertiary break-words leading-snug"
+            >
+              ผัดกะเพรา
+            </p>
+          </div>
+
+          <!-- Spin Again Button (Returns to First Page / Resets Modal) -->
+          <button
+            id="spinAgainBtn"
+            class="w-full min-h-[52px] py-3.5 px-6 rounded-2xl bg-brandSecondary hover:bg-[#28a03a] active:translate-y-1 text-white font-bold text-base sm:text-xl shadow-[0_5px_0_#302F2B] border-2 border-brandTertiary transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            <span>🔄</span>
+            <span>Spin again</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      /**
+       * Menu Items Configuration (Exact list requested by user)
+       * Paired with contextual emojis for visual delight in the result modal
+       */
+      const menuItems = [
+        { name: "ผัดไทย", emoji: "🍝" },
+        { name: "ผัดกะเพรา", emoji: "🌿" },
+        { name: "ข้าวคลุกกระเพรา", emoji: "🍛" },
+        { name: "ส้มตำ", emoji: "🥗" },
+        { name: "ก๋วยเตี๋ยว(แห้ง)", emoji: "🥢" },
+        { name: "ก๋วยเตี๋ยว(น้ำ)", emoji: "🍜" },
+        { name: "ไก่ทอด", emoji: "🍗" },
+        { name: "ไก่ย่าง", emoji: "🔥" },
+        { name: "ไข่เจียว", emoji: "🍳" },
+        { name: "คอหมูย่าง / เนื้อย่าง", emoji: "🥩" },
+        { name: "ผัดขี้เมา", emoji: "🌶️" },
+        { name: "ราดหน้า", emoji: "🍲" },
+        { name: "ผัดซีอิ้ว", emoji: "🥡" },
+        { name: "ข้าวผัด", emoji: "🍚" },
+        { name: "Cashew nut", emoji: "🥜" },
+        { name: "น้ำตก (salad)", emoji: "🥩" },
+        { name: "ผัดขิงสด", emoji: "🫚" },
+        { name: "ผัดคะน้า", emoji: "🥬" },
+        { name: "ยำวุ้นเส้น", emoji: "🥗" },
+        { name: "แกงเขียวหวาน", emoji: "🍛" },
+        { name: "แกงพะแนง", emoji: "🥘" },
+        { name: "ต้มแซ่บ", emoji: "🍲" },
+        { name: "ต้มยำ", emoji: "🦐" },
+      ];
+
+      // DOM Elements
+      const wheelContainer = document.getElementById("wheelContainer");
+      const canvas = document.getElementById("rouletteCanvas");
+      const ctx = canvas.getContext("2d");
+      const spinBtn = document.getElementById("spinBtn");
+      const centerSpinBtn = document.getElementById("centerSpinBtn");
+      const resultModal = document.getElementById("resultModal");
+      const resultFoodName = document.getElementById("resultFoodName");
+      const resultEmoji = document.getElementById("resultEmoji");
+      const spinAgainBtn = document.getElementById("spinAgainBtn");
+      const soundToggleBtn = document.getElementById("soundToggleBtn");
+      const soundIcon = document.getElementById("soundIcon");
+      const soundText = document.getElementById("soundText");
+      const confettiCanvas = document.getElementById("confettiCanvas");
+      const confettiCtx = confettiCanvas.getContext("2d");
+
+      // Wheel State
+      let currentRotation = 0; // in radians
+      let isSpinning = false;
+      let soundEnabled = true;
+      let lastTickIndex = -1;
+      let confettiParticles = [];
+      let confettiAnimId = null;
+
+      // Sound Synthesizer Setup (Tone.js)
+      let tickSynth = null;
+      let winSynth = null;
+
+      function initAudio() {
+        if (!soundEnabled || typeof Tone === "undefined") return;
+        try {
+          if (Tone.context.state !== "running") {
+            Tone.start();
+          }
+          if (!tickSynth) {
+            tickSynth = new Tone.MembraneSynth({
+              pitchDecay: 0.01,
+              octaves: 3,
+              oscillator: { type: "sine" },
+              envelope: {
+                attack: 0.001,
+                decay: 0.05,
+                sustain: 0,
+                release: 0.01,
+              },
+            }).toDestination();
+            tickSynth.volume.value = -10;
+          }
+          if (!winSynth) {
+            winSynth = new Tone.PolySynth(Tone.Synth, {
+              oscillator: { type: "triangle" },
+              envelope: {
+                attack: 0.02,
+                decay: 0.2,
+                sustain: 0.1,
+                release: 0.6,
+              },
+            }).toDestination();
+            winSynth.volume.value = -6;
+          }
+        } catch (e) {
+          console.warn("Audio initialization skipped:", e);
+        }
+      }
+
+      function playTickSound() {
+        if (!soundEnabled || !tickSynth) return;
+        try {
+          tickSynth.triggerAttackRelease("G5", "32n");
+        } catch (e) {}
+      }
+
+      function playWinSound() {
+        if (!soundEnabled || !winSynth) return;
+        try {
+          const now = Tone.now();
+          winSynth.triggerAttackRelease("C5", "16n", now);
+          winSynth.triggerAttackRelease("E5", "16n", now + 0.09);
+          winSynth.triggerAttackRelease("G5", "16n", now + 0.18);
+          winSynth.triggerAttackRelease("C6", "4n", now + 0.27);
+        } catch (e) {}
+      }
+
+      /**
+       * Resize canvas responsively to maintain crisp Retina/High-DPI rendering
+       */
+      function resizeCanvas() {
+        const rect = wheelContainer.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        const dpr = Math.min(window.devicePixelRatio || 1, 3);
+        canvas.width = Math.round(rect.width * dpr);
+        canvas.height = Math.round(rect.height * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        drawWheel(rect.width, rect.height);
+      }
+
+      /**
+       * Determine slice colors alternating cleanly across brand palette
+       */
+      function getSliceColors(index, total) {
+        const palette = [
+          { bg: "#FCCD47", text: "#302F2B" },
+          { bg: "#30B944", text: "#FFFFFF" },
+          { bg: "#302F2B", text: "#FCCD47" },
+        ];
+        // Avoid adjacent duplicate colors if total % 3 === 1
+        if (index === total - 1 && total % 3 === 1) {
+          return palette[1];
+        }
+        return palette[index % palette.length];
+      }
+
+      /**
+       * Draw the roulette wheel and all 23 menu labels
+       */
+      function drawWheel(width, height) {
+        if (!width || !height) {
+          const rect = wheelContainer.getBoundingClientRect();
+          width = rect.width;
+          height = rect.height;
+        }
+        if (!width || !height) return;
+
+        const cx = width / 2;
+        const cy = height / 2;
+        const radius = Math.min(cx, cy);
+        const total = menuItems.length;
+        const arc = (2 * Math.PI) / total;
+
+        ctx.clearRect(0, 0, width, height);
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(currentRotation);
+
+        for (let i = 0; i < total; i++) {
+          const startAngle = i * arc;
+          const endAngle = startAngle + arc;
+          const colors = getSliceColors(i, total);
+
+          // Draw slice wedge
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.arc(0, 0, radius, startAngle, endAngle);
+          ctx.closePath();
+          ctx.fillStyle = colors.bg;
+          ctx.fill();
+
+          // Slice border
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = "#302F2B";
+          ctx.stroke();
+
+          // Draw menu label radially
+          ctx.save();
+          ctx.rotate(startAngle + arc / 2);
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          ctx.fillStyle = colors.text;
+
+          // Responsive font sizing based on wheel radius (legible on small mobile screens)
+          const fontSize = Math.max(8.5, Math.min(14.5, radius * 0.064));
+          ctx.font = `700 ${fontSize}px 'Prompt', 'Inter', sans-serif`;
+
+          // Position text neatly near the outer edge
+          const textRadius = radius * 0.89;
+          ctx.fillText(menuItems[i].name, textRadius, 0);
+          ctx.restore();
+
+          // Draw outer rim peg dots for visual polish
+          ctx.save();
+          ctx.rotate(startAngle);
+          ctx.beginPath();
+          ctx.arc(
+            radius - radius * 0.028,
+            0,
+            Math.max(1.8, radius * 0.011),
+            0,
+            2 * Math.PI,
+          );
+          ctx.fillStyle = "#FFFFFF";
+          ctx.fill();
+          ctx.restore();
+        }
+
+        ctx.restore();
+      }
+
+      /**
+       * Calculate which slice is currently under the top pointer (-PI / 2)
+       */
+      function getSelectedSliceIndex(rotation) {
+        const total = menuItems.length;
+        const arc = (2 * Math.PI) / total;
+        const pointerAngle = (3 * Math.PI) / 2; // Top 12 o'clock position
+        const normalizedRotation =
+          ((rotation % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+        const relativeAngle =
+          (pointerAngle - normalizedRotation + 2 * Math.PI) % (2 * Math.PI);
+        return Math.floor(relativeAngle / arc) % total;
+      }
+
+      /**
+       * Start spinning animation with realistic ease-out deceleration
+       */
+      function startSpin() {
+        if (isSpinning) return;
+        initAudio();
+
+        isSpinning = true;
+        spinBtn.disabled = true;
+        centerSpinBtn.disabled = true;
+        spinBtn.classList.add("opacity-75", "cursor-not-allowed");
+
+        const startRotation = currentRotation;
+        // Spin between 6 and 9 full revolutions plus random landing offset
+        const extraSpins = (6 + Math.random() * 3) * 2 * Math.PI;
+        const randomOffset = Math.random() * 2 * Math.PI;
+        const targetRotation = startRotation + extraSpins + randomOffset;
+        const duration = 4500; // 4.5 seconds
+        const startTime = performance.now();
+
+        function easeOutQuart(t) {
+          return 1 - Math.pow(1 - t, 4);
+        }
+
+        function animateSpin(now) {
+          const elapsed = now - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = easeOutQuart(progress);
+
+          currentRotation =
+            startRotation + (targetRotation - startRotation) * eased;
+          drawWheel();
+
+          // Trigger tick sound when crossing slice boundaries
+          const currentIndex = getSelectedSliceIndex(currentRotation);
+          if (currentIndex !== lastTickIndex) {
+            playTickSound();
+            lastTickIndex = currentIndex;
+          }
+
+          if (progress < 1) {
+            requestAnimationFrame(animateSpin);
+          } else {
+            isSpinning = false;
+            spinBtn.disabled = false;
+            centerSpinBtn.disabled = false;
+            spinBtn.classList.remove("opacity-75", "cursor-not-allowed");
+
+            const winner = menuItems[currentIndex];
+            showResultModal(winner);
+          }
+        }
+
+        requestAnimationFrame(animateSpin);
+      }
+
+      /**
+       * Show Step 2: Result Modal with Confetti celebration
+       */
+      function showResultModal(winner) {
+        resultFoodName.textContent = winner.name;
+        resultEmoji.textContent = winner.emoji;
+        resultModal.classList.remove("hidden");
+        resultModal.classList.add("flex");
+        playWinSound();
+        launchConfetti();
+      }
+
+      /**
+       * Return to First Page when pressing "Spin again"
+       */
+      function resetToFirstPage() {
+        resultModal.classList.add("hidden");
+        resultModal.classList.remove("flex");
+        stopConfetti();
+      }
+
+      /**
+       * Lightweight celebratory confetti effect
+       */
+      function launchConfetti() {
+        confettiCanvas.width = window.innerWidth;
+        confettiCanvas.height = window.innerHeight;
+        const colors = ["#FCCD47", "#30B944", "#302F2B", "#FFFFFF"];
+        confettiParticles = Array.from({ length: 75 }, () => ({
+          x: Math.random() * confettiCanvas.width,
+          y: -20 - Math.random() * confettiCanvas.height * 0.4,
+          w: 8 + Math.random() * 6,
+          h: 5 + Math.random() * 5,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          vx: (Math.random() - 0.5) * 4,
+          vy: 3 + Math.random() * 4,
+          rot: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 10,
+        }));
+
+        function renderConfetti() {
+          confettiCtx.clearRect(
+            0,
+            0,
+            confettiCanvas.width,
+            confettiCanvas.height,
+          );
+          let active = false;
+          for (const p of confettiParticles) {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.rot += p.vRot;
+            if (p.y < confettiCanvas.height + 20) active = true;
+
+            confettiCtx.save();
+            confettiCtx.translate(p.x, p.y);
+            confettiCtx.rotate((p.rot * Math.PI) / 180);
+            confettiCtx.fillStyle = p.color;
+            confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            confettiCtx.restore();
+          }
+
+          if (active) {
+            confettiAnimId = requestAnimationFrame(renderConfetti);
+          } else {
+            stopConfetti();
+          }
+        }
+
+        if (confettiAnimId) cancelAnimationFrame(confettiAnimId);
+        confettiAnimId = requestAnimationFrame(renderConfetti);
+      }
+
+      function stopConfetti() {
+        if (confettiAnimId) {
+          cancelAnimationFrame(confettiAnimId);
+          confettiAnimId = null;
+        }
+        confettiCtx.clearRect(
+          0,
+          0,
+          confettiCanvas.width,
+          confettiCanvas.height,
+        );
+      }
+
+      // Event Listeners (Click + Touch Swipe on Wheel for mobile ergonomics)
+      spinBtn.addEventListener("click", startSpin);
+      centerSpinBtn.addEventListener("click", startSpin);
+      spinAgainBtn.addEventListener("click", resetToFirstPage);
+
+      let touchStartX = 0;
+      let touchStartY = 0;
+      wheelContainer.addEventListener(
+        "touchstart",
+        (e) => {
+          if (e.touches.length === 1) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+          }
+        },
+        { passive: true },
+      );
+
+      wheelContainer.addEventListener(
+        "touchend",
+        (e) => {
+          if (e.changedTouches.length === 1) {
+            const dx = Math.abs(e.changedTouches[0].clientX - touchStartX);
+            const dy = Math.abs(e.changedTouches[0].clientY - touchStartY);
+            // Trigger spin on quick swipe across the wheel
+            if (dx > 24 || dy > 24) {
+              startSpin();
+            }
+          }
+        },
+        { passive: true },
+      );
+
+      soundToggleBtn.addEventListener("click", () => {
+        soundEnabled = !soundEnabled;
+        soundIcon.textContent = soundEnabled ? "🔊" : "🔇";
+        soundText.textContent = soundEnabled ? "Sound On" : "Muted";
+      });
+
+      // Observe container size changes across mobile orientation flips & viewport resizes
+      if (typeof ResizeObserver !== "undefined") {
+        const wheelObserver = new ResizeObserver(() => resizeCanvas());
+        wheelObserver.observe(wheelContainer);
+      }
+
+      window.addEventListener("resize", () => {
+        resizeCanvas();
+        if (confettiAnimId) {
+          confettiCanvas.width = window.innerWidth;
+          confettiCanvas.height = window.innerHeight;
+        }
+      });
+
+      // Initial Render
+      window.addEventListener("load", () => {
+        resizeCanvas();
+      });
+    </script>
+  </body>
+</html>
