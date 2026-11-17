@@ -117,20 +117,25 @@
 
     <!-- Header Section (Mobile-first compact spacing) -->
     <header
-      class="w-full max-w-4xl mx-auto pt-3 sm:pt-6 pb-1 px-4 text-center z-10 shrink-0"
+      class="w-full max-w-4xl mx-auto pt-3 sm:pt-6 pb-1 px-4 text-center z-10 shrink-0 relative"
     >
-      <div
-        class="inline-flex items-center gap-1.5 sm:gap-2 bg-brandTertiary text-brandPrimary px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-sm font-semibold tracking-wide mb-1.5 sm:mb-3 shadow-md"
-      >
-        <span>🍽️</span>
-        <span>FOOD ROULETTE • By Phone</span>
+      <!-- Top Badge -->
+      <div class="flex items-center justify-center mb-1.5 sm:mb-3">
+        <div
+          class="inline-flex items-center gap-1.5 sm:gap-2 bg-brandTertiary text-brandPrimary px-3 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-sm font-semibold tracking-wide shadow-md"
+        >
+          <span>🍽️</span>
+          <span id="badgeText">FOOD ROULETTE • สุ่มว่าจะกินอะไรดี</span>
+        </div>
       </div>
+
       <h1
         class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-brandTertiary tracking-tight leading-tight"
       >
         What to eat today
       </h1>
       <p
+        id="subtitleText"
         class="text-lg sm:text-2xl md:text-3xl font-bold text-brandSecondary mt-0.5 sm:mt-1"
       >
         (วันนี้กินอะไรดี)
@@ -222,7 +227,7 @@
     <footer
       class="w-full py-2.5 sm:py-4 px-4 text-center text-[11px] sm:text-sm text-brandTertiary/70 z-10 shrink-0"
     >
-      <p>
+      <p id="footerText">
         กดปุ่ม
         <strong class="text-brandTertiary">Spin</strong>
         หรือปัดที่วงล้อเพื่อสุ่มเมนูมื้ออร่อยวันนี้!
@@ -242,11 +247,15 @@
           class="bg-brandPrimary py-4 sm:py-5 px-5 sm:px-6 text-center border-b-[3px] sm:border-b-4 border-brandTertiary relative"
         >
           <span
+            id="modalBadgeText"
             class="inline-block bg-brandTertiary text-brandPrimary text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-1"
           >
             🎉 เมนูผู้ชนะวันนี้คือ
           </span>
-          <h2 class="text-base sm:text-xl font-bold text-brandTertiary">
+          <h2
+            id="modalTitleText"
+            class="text-base sm:text-xl font-bold text-brandTertiary"
+          >
             Today's Menu Recommendation!
           </h2>
         </div>
@@ -261,7 +270,7 @@
             🍜
           </div>
 
-          <!-- Selected Menu Name -->
+          <!-- Selected Menu Name (Primary + Secondary Language Subtitle) -->
           <div
             class="bg-[#FFFDF7] border-2 border-dashed border-brandTertiary/30 rounded-2xl py-3.5 sm:py-4 px-4 sm:px-5 w-full mb-5 sm:mb-6"
           >
@@ -270,6 +279,12 @@
               class="text-xl sm:text-3xl md:text-4xl font-extrabold text-brandTertiary break-words leading-snug"
             >
               ผัดกะเพรา
+            </p>
+            <p
+              id="resultFoodSubName"
+              class="text-xs sm:text-base font-semibold text-brandSecondary mt-1"
+            >
+              Pad Kra Pao (Stir-fried Holy Basil)
             </p>
           </div>
 
@@ -287,33 +302,40 @@
 
     <script>
       /**
-       * Menu Items Configuration (Exact list requested by user)
-       * Paired with contextual emojis for visual delight in the result modal
+       * Menu Items Configuration (Exact 23 items with Thai & English translations)
        */
       const menuItems = [
-        { name: "ผัดไทย", emoji: "🍝" },
-        { name: "ผัดกะเพรา", emoji: "🌿" },
-        { name: "ข้าวคลุกกระเพรา", emoji: "🍛" },
-        { name: "ส้มตำ", emoji: "🥗" },
-        { name: "ก๋วยเตี๋ยว(แห้ง)", emoji: "🥢" },
-        { name: "ก๋วยเตี๋ยว(น้ำ)", emoji: "🍜" },
-        { name: "ไก่ทอด", emoji: "🍗" },
-        { name: "ไก่ย่าง", emoji: "🔥" },
-        { name: "ไข่เจียว", emoji: "🍳" },
-        { name: "หมูย่าง / เนื้อย่าง", emoji: "🥩" },
-        { name: "ผัดขี้เมา", emoji: "🌶️" },
-        { name: "ราดหน้า", emoji: "🍲" },
-        { name: "ผัดซีอิ้ว", emoji: "🥡" },
-        { name: "ข้าวผัด", emoji: "🍚" },
-        { name: "Cashew nut", emoji: "🥜" },
-        { name: "น้ำตก (salad)", emoji: "🥩" },
-        { name: "ผัดขิงสด", emoji: "🫚" },
-        { name: "ผัดคะน้า", emoji: "🥬" },
-        { name: "ยำวุ้นเส้น", emoji: "🥗" },
-        { name: "แกงเขียวหวาน", emoji: "🍛" },
-        { name: "แกงพะแนง", emoji: "🥘" },
-        { name: "ต้มแซ่บ", emoji: "🍲" },
-        { name: "ต้มยำ", emoji: "🦐" },
+        { nameTh: "ผัดไทย", nameEn: "Pad Thai", emoji: "🍝" },
+        { nameTh: "ผัดกะเพรา", nameEn: "Pad Kra Pao", emoji: "🌿" },
+        { nameTh: "ข้าวคลุกกระเพรา", nameEn: "Basil Fried Rice", emoji: "🍛" },
+        { nameTh: "ส้มตำ", nameEn: "Som Tum (Papaya Salad)", emoji: "🥗" },
+        { nameTh: "ก๋วยเตี๋ยว(แห้ง)", nameEn: "Noodles (Dry)", emoji: "🥢" },
+        { nameTh: "ก๋วยเตี๋ยว(น้ำ)", nameEn: "Noodle (Soup)", emoji: "🍜" },
+        { nameTh: "ไก่ทอด", nameEn: "Fried Chicken", emoji: "🍗" },
+        { nameTh: "ไก่ย่าง", nameEn: "Grilled Chicken", emoji: "🔥" },
+        { nameTh: "ไข่เจียว", nameEn: "Thai Omelette", emoji: "🍳" },
+        {
+          nameTh: "หมูย่าง / เนื้อย่าง",
+          nameEn: "Grilled Pork / Beef",
+          emoji: "🥩",
+        },
+        { nameTh: "ผัดขี้เมา", nameEn: "Pad Kee Mow", emoji: "🌶️" },
+        { nameTh: "ราดหน้า", nameEn: "Rad Na (Gravy Noodles)", emoji: "🍲" },
+        { nameTh: "ผัดซีอิ้ว", nameEn: "Pad See Ew", emoji: "🥡" },
+        { nameTh: "ข้าวผัด", nameEn: "Fried Rice", emoji: "🍚" },
+        { nameTh: "Cashew nut", nameEn: "Cashew Nut Stir-Fry", emoji: "🥜" },
+        {
+          nameTh: "น้ำตก (salad)",
+          nameEn: "Nam Tok (Spicy Meat Salad)",
+          emoji: "🥩",
+        },
+        { nameTh: "ผัดขิงสด", nameEn: "Ginger Stir-Fry", emoji: "🫚" },
+        { nameTh: "ผัดคะน้า", nameEn: "Stir-Fried Kai Lan", emoji: "🥬" },
+        { nameTh: "ยำวุ้นเส้น", nameEn: "Glass Noodle Salad", emoji: "🥗" },
+        { nameTh: "แกงเขียวหวาน", nameEn: "Green Curry", emoji: "🍛" },
+        { nameTh: "แกงพะแนง", nameEn: "Panang Curry", emoji: "🥘" },
+        { nameTh: "ต้มแซ่บ", nameEn: "Tom Zab", emoji: "🍲" },
+        { nameTh: "ต้มยำ", nameEn: "Tom Yum Soup", emoji: "🦐" },
       ];
 
       // DOM Elements
@@ -324,15 +346,24 @@
       const centerSpinBtn = document.getElementById("centerSpinBtn");
       const resultModal = document.getElementById("resultModal");
       const resultFoodName = document.getElementById("resultFoodName");
+      const resultFoodSubName = document.getElementById("resultFoodSubName");
       const resultEmoji = document.getElementById("resultEmoji");
       const spinAgainBtn = document.getElementById("spinAgainBtn");
       const soundToggleBtn = document.getElementById("soundToggleBtn");
       const soundIcon = document.getElementById("soundIcon");
       const soundText = document.getElementById("soundText");
+      const itemCountLabel = document.getElementById("itemCountLabel");
+      const badgeText = document.getElementById("badgeText");
+      const subtitleText = document.getElementById("subtitleText");
+      const footerText = document.getElementById("footerText");
+      const modalBadgeText = document.getElementById("modalBadgeText");
+      const modalTitleText = document.getElementById("modalTitleText");
       const confettiCanvas = document.getElementById("confettiCanvas");
       const confettiCtx = confettiCanvas.getContext("2d");
 
-      // Wheel State
+      // Wheel & Localization State
+      let currentLang = "th";
+      let lastWinner = null;
       let currentRotation = 0; // in radians
       let isSpinning = false;
       let soundEnabled = true;
@@ -340,16 +371,75 @@
       let confettiParticles = [];
       let confettiAnimId = null;
 
-      // Sound Synthesizer Setup (Tone.js)
+      const i18n = {
+        th: {
+          badge: "FOOD ROULETTE • สุ่มว่าจะกินอะไรดี",
+          subtitle: "(วันนี้กินอะไรดี)",
+          itemCount: `${menuItems.length} เมนูพร้อมสุ่ม`,
+          soundOn: "เปิดเสียง",
+          soundOff: "ปิดเสียง",
+          footer:
+            'กดปุ่ม <strong class="text-brandTertiary">Spin</strong> หรือปัดที่วงล้อเพื่อสุ่มเมนูมื้ออร่อยวันนี้!',
+          modalBadge: "🎉 เมนูผู้ชนะวันนี้คือ",
+          modalTitle: "Today's Menu Recommendation!",
+        },
+        en: {
+          badge: "FOOD ROULETTE • RANDOM MENU",
+          subtitle: "Discover your next delicious meal",
+          itemCount: `${menuItems.length} dishes ready`,
+          soundOn: "Sound On",
+          soundOff: "Muted",
+          footer:
+            'Tap <strong class="text-brandTertiary">Spin</strong> or swipe the wheel to pick your meal today!',
+          modalBadge: "🎉 TODAY'S WINNER IS",
+          modalTitle: "Enjoy your delicious meal!",
+        },
+      };
+
+      /**
+       * Switch active UI & wheel language between Thai ('th') and English ('en')
+       */
+      function setLanguage(lang) {
+        currentLang = lang;
+        document.documentElement.lang = lang;
+        const t = i18n[lang];
+
+        badgeText.textContent = t.badge;
+        subtitleText.textContent = t.subtitle;
+        itemCountLabel.textContent = t.itemCount;
+        soundText.textContent = soundEnabled ? t.soundOn : t.soundOff;
+        footerText.innerHTML = t.footer;
+        modalBadgeText.textContent = t.modalBadge;
+        modalTitleText.textContent = t.modalTitle;
+
+        // Update modal result labels if currently open
+        if (lastWinner) {
+          updateWinnerDisplay(lastWinner);
+        }
+
+        // Redraw wheel slices
+        drawWheel();
+      }
+
+      function updateWinnerDisplay(winner) {
+        if (currentLang === "en") {
+          resultFoodName.textContent = winner.nameEn;
+          resultFoodSubName.textContent = winner.nameTh;
+        } else {
+          resultFoodName.textContent = winner.nameTh;
+          resultFoodSubName.textContent = winner.nameEn;
+        }
+        resultEmoji.textContent = winner.emoji;
+      }
+
+      // Tone.js Sound Synthesizers (No external audio files needed)
       let tickSynth = null;
       let winSynth = null;
 
-      function initAudio() {
-        if (!soundEnabled || typeof Tone === "undefined") return;
+      async function initAudio() {
+        if (!soundEnabled) return;
         try {
-          if (Tone.context.state !== "running") {
-            Tone.start();
-          }
+          await Tone.start();
           if (!tickSynth) {
             tickSynth = new Tone.MembraneSynth({
               pitchDecay: 0.01,
@@ -477,12 +567,14 @@
           ctx.fillStyle = colors.text;
 
           // Responsive font sizing based on wheel radius (legible on small mobile screens)
-          const fontSize = Math.max(8.5, Math.min(14.5, radius * 0.064));
+          const fontSize = Math.max(8, Math.min(14, radius * 0.06));
           ctx.font = `700 ${fontSize}px 'Prompt', 'Inter', sans-serif`;
 
           // Position text neatly near the outer edge
           const textRadius = radius * 0.89;
-          ctx.fillText(menuItems[i].name, textRadius, 0);
+          const label =
+            currentLang === "en" ? menuItems[i].nameEn : menuItems[i].nameTh;
+          ctx.fillText(label, textRadius, 0);
           ctx.restore();
 
           // Draw outer rim peg dots for visual polish
@@ -578,8 +670,8 @@
        * Show Step 2: Result Modal with Confetti celebration
        */
       function showResultModal(winner) {
-        resultFoodName.textContent = winner.name;
-        resultEmoji.textContent = winner.emoji;
+        lastWinner = winner;
+        updateWinnerDisplay(winner);
         resultModal.classList.remove("hidden");
         resultModal.classList.add("flex");
         playWinSound();
@@ -695,8 +787,9 @@
 
       soundToggleBtn.addEventListener("click", () => {
         soundEnabled = !soundEnabled;
+        const t = i18n[currentLang];
         soundIcon.textContent = soundEnabled ? "🔊" : "🔇";
-        soundText.textContent = soundEnabled ? "Sound On" : "Muted";
+        soundText.textContent = soundEnabled ? t.soundOn : t.soundOff;
       });
 
       // Observe container size changes across mobile orientation flips & viewport resizes
@@ -715,6 +808,7 @@
 
       // Initial Render
       window.addEventListener("load", () => {
+        setLanguage("th");
         resizeCanvas();
       });
     </script>
